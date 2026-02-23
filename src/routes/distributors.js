@@ -1,13 +1,14 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const User = require('../models/User');
-const { protect, adminOnly } = require('../middleware/auth');
-const { sendDistributorCredentials } = require('../utils/email');
+const User = require("../models/User");
+const { protect, adminOnly } = require("../middleware/auth");
+const { sendDistributorCredentials } = require("../utils/email");
+const { default: mongoose } = require("mongoose");
 
 // Generate random password
 const generatePassword = () => {
-  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!';
-  let password = '';
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$!";
+  let password = "";
   for (let i = 0; i < 10; i++) {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -15,29 +16,51 @@ const generatePassword = () => {
 };
 
 // GET /api/distributors - Admin: get all distributors
-router.get('/', protect, adminOnly, async (req, res) => {
+router.get("/", protect, adminOnly, async (req, res) => {
+  mongoose
+    .connect(
+      process.env.MONGODB_URI ||
+        "mongodb+srv://muhammedbilalhashmi94_db_user:114QlQ9BwRoM1wdg@cluster0.6rij7pu.mongodb.net/",
+    )
+    .then(() => {
+      console.log("✅ Connected to MongoDB");
+      // Create default admin if none exists
+      // seedAdmin();
+    })
+    .catch((err) => console.error("❌ MongoDB connection error:", err));
   try {
-    const distributors = await User.find({ role: 'distributor' })
+    const distributors = await User.find({ role: "distributor" })
       .sort({ createdAt: -1 })
-      .select('-password');
+      .select("-password");
     res.json({ distributors });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 // POST /api/distributors - Admin: create distributor
-router.post('/', protect, adminOnly, async (req, res) => {
+router.post("/", protect, adminOnly, async (req, res) => {
+  mongoose
+    .connect(
+      process.env.MONGODB_URI ||
+        "mongodb+srv://muhammedbilalhashmi94_db_user:114QlQ9BwRoM1wdg@cluster0.6rij7pu.mongodb.net/",
+    )
+    .then(() => {
+      console.log("✅ Connected to MongoDB");
+      // Create default admin if none exists
+      // seedAdmin();
+    })
+    .catch((err) => console.error("❌ MongoDB connection error:", err));
   try {
     const { name, email, company, phone } = req.body;
 
     if (!name || !email) {
-      return res.status(400).json({ message: 'Name and email are required' });
+      return res.status(400).json({ message: "Name and email are required" });
     }
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      return res.status(400).json({ message: 'Email already in use' });
+      return res.status(400).json({ message: "Email already in use" });
     }
 
     const plainPassword = generatePassword();
@@ -46,86 +69,144 @@ router.post('/', protect, adminOnly, async (req, res) => {
       name,
       email: email.toLowerCase(),
       password: plainPassword,
-      role: 'distributor',
+      role: "distributor",
       company,
-      phone
+      phone,
     });
 
     // Send credentials via email
     try {
-      await sendDistributorCredentials({ name, email, password: plainPassword });
+      await sendDistributorCredentials({
+        name,
+        email,
+        password: plainPassword,
+      });
     } catch (emailError) {
-      console.error('Email sending failed:', emailError.message);
+      console.error("Email sending failed:", emailError.message);
       // Don't fail the request if email fails — return credentials in response
       return res.status(201).json({
         distributor,
         tempPassword: plainPassword,
         emailSent: false,
-        warning: 'Account created but email could not be sent. Share credentials manually.'
+        warning:
+          "Account created but email could not be sent. Share credentials manually.",
       });
     }
 
     res.status(201).json({
       distributor,
       emailSent: true,
-      message: 'Distributor account created and credentials sent via email'
+      message: "Distributor account created and credentials sent via email",
     });
   } catch (error) {
-    console.error('Create distributor error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Create distributor error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 // GET /api/distributors/:id - Admin: get single distributor
-router.get('/:id', protect, adminOnly, async (req, res) => {
+router.get("/:id", protect, adminOnly, async (req, res) => {
+  mongoose
+    .connect(
+      process.env.MONGODB_URI ||
+        "mongodb+srv://muhammedbilalhashmi94_db_user:114QlQ9BwRoM1wdg@cluster0.6rij7pu.mongodb.net/",
+    )
+    .then(() => {
+      console.log("✅ Connected to MongoDB");
+      // Create default admin if none exists
+      // seedAdmin();
+    })
+    .catch((err) => console.error("❌ MongoDB connection error:", err));
   try {
-    const distributor = await User.findOne({ _id: req.params.id, role: 'distributor' });
+    const distributor = await User.findOne({
+      _id: req.params.id,
+      role: "distributor",
+    });
     if (!distributor) {
-      return res.status(404).json({ message: 'Distributor not found' });
+      return res.status(404).json({ message: "Distributor not found" });
     }
     res.json({ distributor });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 // PUT /api/distributors/:id - Admin: update distributor
-router.put('/:id', protect, adminOnly, async (req, res) => {
+router.put("/:id", protect, adminOnly, async (req, res) => {
+  mongoose
+    .connect(
+      process.env.MONGODB_URI ||
+        "mongodb+srv://muhammedbilalhashmi94_db_user:114QlQ9BwRoM1wdg@cluster0.6rij7pu.mongodb.net/",
+    )
+    .then(() => {
+      console.log("✅ Connected to MongoDB");
+      // Create default admin if none exists
+      // seedAdmin();
+    })
+    .catch((err) => console.error("❌ MongoDB connection error:", err));
   try {
     const { name, company, phone, isActive } = req.body;
     const distributor = await User.findOneAndUpdate(
-      { _id: req.params.id, role: 'distributor' },
+      { _id: req.params.id, role: "distributor" },
       { name, company, phone, isActive },
-      { new: true }
+      { new: true },
     );
     if (!distributor) {
-      return res.status(404).json({ message: 'Distributor not found' });
+      return res.status(404).json({ message: "Distributor not found" });
     }
-    res.json({ distributor, message: 'Distributor updated' });
+    res.json({ distributor, message: "Distributor updated" });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 // DELETE /api/distributors/:id - Admin: delete distributor
-router.delete('/:id', protect, adminOnly, async (req, res) => {
+router.delete("/:id", protect, adminOnly, async (req, res) => {
+  mongoose
+    .connect(
+      process.env.MONGODB_URI ||
+        "mongodb+srv://muhammedbilalhashmi94_db_user:114QlQ9BwRoM1wdg@cluster0.6rij7pu.mongodb.net/",
+    )
+    .then(() => {
+      console.log("✅ Connected to MongoDB");
+      // Create default admin if none exists
+      // seedAdmin();
+    })
+    .catch((err) => console.error("❌ MongoDB connection error:", err));
   try {
-    const distributor = await User.findOneAndDelete({ _id: req.params.id, role: 'distributor' });
+    const distributor = await User.findOneAndDelete({
+      _id: req.params.id,
+      role: "distributor",
+    });
     if (!distributor) {
-      return res.status(404).json({ message: 'Distributor not found' });
+      return res.status(404).json({ message: "Distributor not found" });
     }
-    res.json({ message: 'Distributor deleted' });
+    res.json({ message: "Distributor deleted" });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 // POST /api/distributors/:id/reset-password - Admin: reset password
-router.post('/:id/reset-password', protect, adminOnly, async (req, res) => {
+router.post("/:id/reset-password", protect, adminOnly, async (req, res) => {
+  mongoose
+    .connect(
+      process.env.MONGODB_URI ||
+        "mongodb+srv://muhammedbilalhashmi94_db_user:114QlQ9BwRoM1wdg@cluster0.6rij7pu.mongodb.net/",
+    )
+    .then(() => {
+      console.log("✅ Connected to MongoDB");
+      // Create default admin if none exists
+      // seedAdmin();
+    })
+    .catch((err) => console.error("❌ MongoDB connection error:", err));
   try {
-    const distributor = await User.findOne({ _id: req.params.id, role: 'distributor' });
+    const distributor = await User.findOne({
+      _id: req.params.id,
+      role: "distributor",
+    });
     if (!distributor) {
-      return res.status(404).json({ message: 'Distributor not found' });
+      return res.status(404).json({ message: "Distributor not found" });
     }
 
     const newPassword = generatePassword();
@@ -136,14 +217,21 @@ router.post('/:id/reset-password', protect, adminOnly, async (req, res) => {
       await sendDistributorCredentials({
         name: distributor.name,
         email: distributor.email,
-        password: newPassword
+        password: newPassword,
       });
-      res.json({ message: 'Password reset and sent via email', emailSent: true });
+      res.json({
+        message: "Password reset and sent via email",
+        emailSent: true,
+      });
     } catch (emailError) {
-      res.json({ message: 'Password reset', tempPassword: newPassword, emailSent: false });
+      res.json({
+        message: "Password reset",
+        tempPassword: newPassword,
+        emailSent: false,
+      });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 });
 

@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { default: mongoose } = require('mongoose');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, '7f3k9mXpQ2sLvNwRbYcTdAeHgUjZoKiPqFnDmCxWsSyErVtBuGhIlOa4e8r1z6', {
@@ -12,7 +13,18 @@ const generateToken = (id) => {
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
+  mongoose
+      .connect(
+        process.env.MONGODB_URI || "mongodb+srv://muhammedbilalhashmi94_db_user:114QlQ9BwRoM1wdg@cluster0.6rij7pu.mongodb.net/",
+      )
+      .then(() => {
+        console.log("✅ Connected to MongoDB");
+        // Create default admin if none exists
+        // seedAdmin();
+      })
+      .catch((err) => console.error("❌ MongoDB connection error:", err));
   try {
+    
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -59,11 +71,31 @@ router.post('/login', async (req, res) => {
 
 // GET /api/auth/me
 router.get('/me', protect, async (req, res) => {
+  mongoose
+      .connect(
+        process.env.MONGODB_URI || "mongodb+srv://muhammedbilalhashmi94_db_user:114QlQ9BwRoM1wdg@cluster0.6rij7pu.mongodb.net/",
+      )
+      .then(() => {
+        console.log("✅ Connected to MongoDB");
+        // Create default admin if none exists
+        // seedAdmin();
+      })
+      .catch((err) => console.error("❌ MongoDB connection error:", err));
   res.json({ user: req.user });
 });
 
 // PUT /api/auth/change-password
 router.put('/change-password', protect, async (req, res) => {
+  mongoose
+      .connect(
+        process.env.MONGODB_URI || "mongodb+srv://muhammedbilalhashmi94_db_user:114QlQ9BwRoM1wdg@cluster0.6rij7pu.mongodb.net/",
+      )
+      .then(() => {
+        console.log("✅ Connected to MongoDB");
+        // Create default admin if none exists
+        // seedAdmin();
+      })
+      .catch((err) => console.error("❌ MongoDB connection error:", err));
   try {
     const { currentPassword, newPassword } = req.body;
 
